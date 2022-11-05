@@ -5,7 +5,6 @@ import javax.validation.Valid;
 import com.st.app.rewardprovider.entity.Customer;
 import com.st.app.rewardprovider.exception.ResourceNotFoundException;
 import com.st.app.rewardprovider.service.IRewardService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,29 +13,55 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@Slf4j
+/**
+ * Rest Controller
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class RewardProviderController {
 
     private IRewardService rewardService;
 
+    /**
+     * Constructs a new RewardProviderController instance
+     *
+     * @param rewardService
+     */
     @Autowired
     public RewardProviderController(IRewardService rewardService) {
         this.rewardService = rewardService;
     }
 
+    /**
+     * Get the reward points for customerId
+     *
+     * @param customerId
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @GetMapping("/rewards/{id}")
     public ResponseEntity<Customer> getRewardPointById(@PathVariable(value = "id") Long customerId) throws ResourceNotFoundException {
         Customer customer = rewardService.getRewardPointById(customerId);
         return ResponseEntity.ok().body(customer);
     }
 
+    /**
+     * Fetch All customers
+     *
+     * @return
+     */
     @GetMapping("/customer")
     public List<Customer> getAllCustomer() {
         return rewardService.getAllCustomer();
     }
 
+    /**
+     * Get customer by customerId
+     *
+     * @param customerId
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @GetMapping("/customer/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable(value = "id") Long customerId)
             throws ResourceNotFoundException {
@@ -44,11 +69,25 @@ public class RewardProviderController {
         return ResponseEntity.ok().body(customer);
     }
 
+    /**
+     * create customer from customerDetails
+     *
+     * @param customer
+     * @return
+     */
     @PostMapping("/customer")
     public Customer createCustomer(@Valid @RequestBody Customer customer) {
         return rewardService.createCustomer(customer);
     }
 
+    /**
+     * Update customer by customerId
+     *
+     * @param customerId
+     * @param customerDetails
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @PutMapping("/customer/{id}")
     public ResponseEntity<Customer> updateCustomer(@PathVariable(value = "id") Long customerId,
                                                    @Valid @RequestBody Customer customerDetails) throws ResourceNotFoundException {
@@ -56,6 +95,13 @@ public class RewardProviderController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
+    /**
+     * Delete customer by customerId
+     *
+     * @param customerId
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @DeleteMapping("/customer/{id}")
     public Map<String, Boolean> deleteCustomer(@PathVariable(value = "id") Long customerId)
             throws ResourceNotFoundException {

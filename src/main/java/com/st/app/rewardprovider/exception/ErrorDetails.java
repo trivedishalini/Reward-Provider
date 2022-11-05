@@ -2,11 +2,21 @@ package com.st.app.rewardprovider.exception;
 
 import java.util.Date;
 
+/**
+ * ErrorDetails
+ */
 public class ErrorDetails {
 	private Date timestamp;
 	private String message;
 	private String details;
 
+	/**
+	 * Instantiates new error response
+	 *
+	 * @param timestamp
+	 * @param message
+	 * @param details
+	 */
 	public ErrorDetails(Date timestamp, String message, String details) {
 		super();
 		this.timestamp = timestamp;

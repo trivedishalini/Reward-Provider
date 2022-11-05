@@ -16,10 +16,12 @@ import java.util.Map;
 @Service
 public class RewardService implements IRewardService {
 
-
     private CustomerRepository customerRepository;
 
     /**
+     *
+     * Constructs a new RewardService instance
+     *
      * @param customerRepository
      */
     @Autowired
@@ -27,28 +29,60 @@ public class RewardService implements IRewardService {
         this.customerRepository = customerRepository;
     }
 
+    /**
+     * calculate rewards point for customerId
+     *
+     * @param customerId
+     * @return
+     */
     @Override
     public Customer getRewardPointById(Long customerId) throws ResourceNotFoundException {
         Customer customer = findCustomerById(customerId);
         return customer;
     }
 
+    /**
+     * Get all customer
+     *
+     * @return
+     */
     @Override
     public List<Customer> getAllCustomer() {
         return customerRepository.findAll();
     }
 
+    /**
+     * Get customer by customerId
+     *
+     * @param customerId
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @Override
     public Customer getCustomerById(Long customerId) throws ResourceNotFoundException {
         Customer customer = findCustomerById(customerId);
         return customer;
     }
 
+    /**
+     * Create customer details
+     *
+     * @param customer
+     * @return
+     */
     @Override
     public Customer createCustomer(@Valid @RequestBody Customer customer) {
         return customerRepository.save(customer);
     }
 
+    /**
+     * Update Customer Details for customerId
+     *
+     * @param customerId
+     * @param customerDetails
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @Override
     public Customer updateCustomer(Long customerId, Customer customerDetails) throws ResourceNotFoundException {
         Customer customer = findCustomerById(customerId);
@@ -60,6 +94,13 @@ public class RewardService implements IRewardService {
         return updatedCustomer;
     }
 
+    /**
+     * Delete customer details for customerId
+     *
+     * @param customerId
+     * @return
+     * @throws ResourceNotFoundException
+     */
     @Override
     public Map<String, Boolean> deleteCustomer(Long customerId) throws ResourceNotFoundException {
         Customer customer = findCustomerById(customerId);

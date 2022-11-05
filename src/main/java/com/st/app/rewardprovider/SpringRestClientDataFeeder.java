@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * The Class SpringRestClientDataFeeder to add Mock data in databse
+ */
 public class SpringRestClientDataFeeder {
 
 	private static final String GET_CUSTOMER_ENDPOINT_URL = "http://localhost:8080/api/v1/customer";
@@ -22,6 +25,11 @@ public class SpringRestClientDataFeeder {
 	private static final String DELETE_CUSTOMER_ENDPOINT_URL = "http://localhost:8080/api/v1/customer/{id}";
 	private static RestTemplate restTemplate = new RestTemplate();
 
+	/**
+	 * Main method to call Customer CRUD end point
+	 *
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		SpringRestClientDataFeeder springRestClientDataFeeder = new SpringRestClientDataFeeder();
 		

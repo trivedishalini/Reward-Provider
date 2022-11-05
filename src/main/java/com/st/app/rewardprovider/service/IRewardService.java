@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface for Reward Services
+ * Interface for Reward Services operations
  */
 public interface IRewardService {
 
@@ -20,11 +20,15 @@ public interface IRewardService {
     Customer getRewardPointById(Long customerId) throws ResourceNotFoundException;
 
     /**
+     * Get all customer
+     *
      * @return
      */
     List<Customer> getAllCustomer();
 
     /**
+     * Get customer by customerId
+     *
      * @param customerId
      * @return
      * @throws ResourceNotFoundException
@@ -32,12 +36,16 @@ public interface IRewardService {
     Customer getCustomerById(Long customerId) throws ResourceNotFoundException;
 
     /**
+     * Create customer details
+     *
      * @param customer
      * @return
      */
     Customer createCustomer(Customer customer);
 
     /**
+     * Update Customer Details for customerId
+     *
      * @param customerId
      * @param customerDetails
      * @return
@@ -46,6 +54,8 @@ public interface IRewardService {
     Customer updateCustomer(Long customerId, Customer customerDetails) throws ResourceNotFoundException;
 
     /**
+     * Delete customer details for customerId
+     *
      * @param customerId
      * @return
      * @throws ResourceNotFoundException
