@@ -41,7 +41,7 @@ public class RewardService implements IRewardService {
     @Override
     public Collection<OrderDetail> getRewardPointById(Long customerId,int fromMonth) throws ResourceNotFoundException {
         Date currentDate = new Date(); //TODO: improve here for timezone calculation .Currently Date default time zone in UTC and all calculation is in UTC based
-        int currentMonth =currentDate.getMonth();
+        int currentMonth =currentDate.getMonth(); //TODO : replace use of getMonth()
         int rewardStartMonth= (currentMonth-fromMonth)+1; //+1 as current month included
 
         Collection<OrderDetail> orderDetails= orderDetailRepository.findTotalPurchaseForMonth(customerId,rewardStartMonth);
