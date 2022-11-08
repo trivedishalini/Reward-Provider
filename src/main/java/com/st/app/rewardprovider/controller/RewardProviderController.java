@@ -38,6 +38,7 @@ public class RewardProviderController {
      * Get the reward points for customerId
      *
      * @param customerId
+     * @param fromMonth
      * @return
      * @throws ResourceNotFoundException
      */

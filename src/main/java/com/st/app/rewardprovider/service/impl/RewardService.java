@@ -35,6 +35,7 @@ public class RewardService implements IRewardService {
      * calculate rewards point for customerId
      *
      * @param customerId
+     * @param fromMonth
      * @return
      */
     @Override

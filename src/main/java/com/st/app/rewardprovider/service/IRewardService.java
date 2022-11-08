@@ -17,6 +17,7 @@ public interface IRewardService {
      * calculate rewards point for customerId
      *
      * @param customerId
+     * @param fromMonth
      * @return
      */
     Collection<OrderDetail> getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException;
