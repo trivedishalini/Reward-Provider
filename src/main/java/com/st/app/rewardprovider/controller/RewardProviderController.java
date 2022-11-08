@@ -3,12 +3,14 @@ package com.st.app.rewardprovider.controller;
 import javax.validation.Valid;
 
 import com.st.app.rewardprovider.entity.Customer;
+import com.st.app.rewardprovider.entity.OrderDetail;
 import com.st.app.rewardprovider.exception.ResourceNotFoundException;
 import com.st.app.rewardprovider.service.IRewardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +42,20 @@ public class RewardProviderController {
      * @throws ResourceNotFoundException
      */
     @GetMapping("/rewards/{id}")
-    public ResponseEntity<Customer> getRewardPointById(@PathVariable(value = "id") Long customerId) throws ResourceNotFoundException {
-        Customer customer = rewardService.getRewardPointById(customerId);
-        return ResponseEntity.ok().body(customer);
+    public ResponseEntity<Collection<OrderDetail>> getRewardPointById(@PathVariable(value = "id") long customerId,@RequestParam int fromMonth) throws ResourceNotFoundException {
+        Collection<OrderDetail> orderDetails = rewardService.getRewardPointById(customerId,fromMonth);
+        return ResponseEntity.ok().body(orderDetails);
+    }
+
+    /**
+     * create order from OrderDetail for customer
+     *
+     * @param orderDetail
+     * @return
+     */
+    @PostMapping("/customer/{customerId}/order")
+    public OrderDetail createOrderDetails(@PathVariable long customerId ,@RequestBody OrderDetail orderDetail) throws ResourceNotFoundException {
+        return rewardService.createOrderDetail(customerId,orderDetail);
     }
 
     /**

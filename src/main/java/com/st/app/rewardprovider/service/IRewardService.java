@@ -1,8 +1,10 @@
 package com.st.app.rewardprovider.service;
 
 import com.st.app.rewardprovider.entity.Customer;
+import com.st.app.rewardprovider.entity.OrderDetail;
 import com.st.app.rewardprovider.exception.ResourceNotFoundException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +19,16 @@ public interface IRewardService {
      * @param customerId
      * @return
      */
-    Customer getRewardPointById(Long customerId) throws ResourceNotFoundException;
+    Collection<OrderDetail> getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException;
+
+    /**
+     * Create order detail for customer
+     *
+     * @param customerId
+     * @param orderDetail
+     * @return
+     */
+    OrderDetail createOrderDetail(long customerId,OrderDetail orderDetail) throws ResourceNotFoundException;
 
     /**
      * Get all customer
