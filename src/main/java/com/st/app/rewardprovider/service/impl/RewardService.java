@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.*;
 
+import static com.st.app.rewardprovider.util.Constants.*;
+
 @Service
 public class RewardService implements IRewardService {
 
@@ -39,16 +41,19 @@ public class RewardService implements IRewardService {
      * @return
      */
     @Override
-    public Collection<OrderDetail> getRewardPointById(Long customerId,int fromMonth) throws ResourceNotFoundException {
-        Date currentDate = new Date(); //TODO: improve here for timezone calculation .Currently Date default time zone in UTC and all calculation is in UTC based
-        int currentMonth =currentDate.getMonth(); //TODO : replace use of getMonth()
-        int rewardStartMonth= (currentMonth-fromMonth)+1; //+1 as current month included
+    public Collection<OrderDetail> getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException {
+        Date currentDate = new Date();
+        int currentMonth = currentDate.getMonth(); //TODO : replace use of getMonth()
+        int rewardStartMonth = (currentMonth - fromMonth) + 1; //+1 as current month included
 
-        Collection<OrderDetail> orderDetails= orderDetailRepository.findTotalPurchaseForMonth(customerId,rewardStartMonth);
-       // calculate sum for every month =orderDetails.totalPurchase is sum of one month purchase from past 3 month
-       // iterate orderDetails and calculate point for each month
-        //total reward point=sum of each month points
-
+        Collection<OrderDetail> orderDetails = orderDetailRepository.findTotalPurchaseForMonth(customerId, rewardStartMonth);
+        long totalPoints = 0;
+        long totalPurchase = 0;
+        totalPurchase = totalPurchase + orderDetails.stream().mapToInt(od -> od.getTotalPurchase().intValue()).sum();
+        long amountRemain = totalPurchase - REWARD_PURCHASE_CUTOFF_SECOND;
+        totalPoints = totalPoints + ((amountRemain >= 0 && totalPurchase > REWARD_PURCHASE_CUTOFF_FIRST) ? (REWARD_POINT_FIRST * REWARD_PURCHASE_CUTOFF_FIRST) : 0);
+        totalPoints = totalPoints + ((amountRemain > 0) ? (REWARD_POINT_SECOND * amountRemain) : 0);
+        System.out.println("totalPoints=" + totalPoints);
         return orderDetails;
     }
 
@@ -64,9 +69,9 @@ public class RewardService implements IRewardService {
         Customer customer = findCustomerById(customerId);
         orderDetail.setOrderStatus("COMPLETED");
         orderDetail.setCustomer(customer);
-        Date created=orderDetail.getCreated()!=null?orderDetail.getCreated():new Date(); // TODO: to insert data on back date. we can remove this when full system in place
+        Date created = orderDetail.getCreated() != null ? orderDetail.getCreated() : new Date(); // TODO: to insert data on back date. we can remove this when full system in place
         orderDetail.setCreated(created);
-        final OrderDetail createdOrderDetail =orderDetailRepository.save(orderDetail);
+        final OrderDetail createdOrderDetail = orderDetailRepository.save(orderDetail);
         return createdOrderDetail;
     }
 

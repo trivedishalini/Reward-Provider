@@ -28,6 +28,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
+    //TODO : need to handler for specific exception to display user friendly message.
     /**
      * Handles  any Exception
      *
