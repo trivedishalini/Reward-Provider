@@ -1,5 +1,6 @@
 package com.st.app.rewardprovider.service.impl;
 
+import com.st.app.rewardprovider.dto.RewardResponseDTO;
 import com.st.app.rewardprovider.entity.Customer;
 import com.st.app.rewardprovider.entity.OrderDetail;
 import com.st.app.rewardprovider.exception.ResourceNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static com.st.app.rewardprovider.util.Constants.*;
@@ -41,20 +43,31 @@ public class RewardService implements IRewardService {
      * @return
      */
     @Override
-    public Collection<OrderDetail> getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException {
+    public RewardResponseDTO getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException {
+        Customer customer = findCustomerById(customerId);
+
         Date currentDate = new Date();
         int currentMonth = currentDate.getMonth(); //TODO : replace use of getMonth()
         int rewardStartMonth = (currentMonth - fromMonth) + 1; //+1 as current month included
 
-        Collection<OrderDetail> orderDetails = orderDetailRepository.findTotalPurchaseForMonth(customerId, rewardStartMonth);
+        Collection<OrderDetail> orderDetails = orderDetailRepository.findTotalPurchaseForMonth(customer.getCustomerId(), rewardStartMonth);
         long totalPoints = 0;
-        long totalPurchase = 0;
-        totalPurchase = totalPurchase + orderDetails.stream().mapToInt(od -> od.getTotalPurchase().intValue()).sum();
-        long amountRemain = totalPurchase - REWARD_PURCHASE_CUTOFF_SECOND;
-        totalPoints = totalPoints + ((amountRemain >= 0 && totalPurchase > REWARD_PURCHASE_CUTOFF_FIRST) ? (REWARD_POINT_FIRST * REWARD_PURCHASE_CUTOFF_FIRST) : 0);
-        totalPoints = totalPoints + ((amountRemain > 0) ? (REWARD_POINT_SECOND * amountRemain) : 0);
-        System.out.println("totalPoints=" + totalPoints);
-        return orderDetails;
+        BigDecimal totalPurchase = new BigDecimal("0");
+        for (OrderDetail orderDetail : orderDetails) {
+            totalPurchase = totalPurchase.add(orderDetail.getTotalPurchase());
+        }
+        BigDecimal amountRemain = totalPurchase.subtract(new BigDecimal(REWARD_PURCHASE_CUTOFF_SECOND));
+        if (amountRemain.longValue() < 0 && totalPurchase.longValue() > REWARD_PURCHASE_CUTOFF_FIRST) {
+            totalPoints = totalPoints + REWARD_POINT_FIRST * (totalPurchase.subtract(new BigDecimal(REWARD_PURCHASE_CUTOFF_FIRST))).longValue();
+        }
+        if (amountRemain.longValue() >= 0 && totalPurchase.longValue() > REWARD_PURCHASE_CUTOFF_FIRST) {
+            totalPoints = totalPoints + REWARD_POINT_FIRST * (new BigDecimal(REWARD_PURCHASE_CUTOFF_FIRST)).longValue();
+        }
+        if (amountRemain.longValue() > 0) {
+            totalPoints = totalPoints + REWARD_POINT_SECOND * amountRemain.longValue();
+        }
+        RewardResponseDTO rewardResponseDTO = new RewardResponseDTO(Math.toIntExact(totalPoints), totalPurchase);
+        return rewardResponseDTO;
     }
 
     /**

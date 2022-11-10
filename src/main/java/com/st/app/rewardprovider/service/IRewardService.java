@@ -1,5 +1,6 @@
 package com.st.app.rewardprovider.service;
 
+import com.st.app.rewardprovider.dto.RewardResponseDTO;
 import com.st.app.rewardprovider.entity.Customer;
 import com.st.app.rewardprovider.entity.OrderDetail;
 import com.st.app.rewardprovider.exception.ResourceNotFoundException;
@@ -20,7 +21,7 @@ public interface IRewardService {
      * @param fromMonth
      * @return
      */
-    Collection<OrderDetail> getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException;
+    RewardResponseDTO getRewardPointById(Long customerId, int fromMonth) throws ResourceNotFoundException;
 
     /**
      * Create order detail for customer
@@ -29,7 +30,7 @@ public interface IRewardService {
      * @param orderDetail
      * @return
      */
-    OrderDetail createOrderDetail(long customerId,OrderDetail orderDetail) throws ResourceNotFoundException;
+    OrderDetail createOrderDetail(long customerId, OrderDetail orderDetail) throws ResourceNotFoundException;
 
     /**
      * Get all customer

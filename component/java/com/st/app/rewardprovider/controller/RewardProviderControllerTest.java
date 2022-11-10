@@ -1,19 +1,31 @@
 package com.st.app.rewardprovider.controller;
 
+import com.st.app.rewardprovider.dto.RewardResponseDTO;
+import com.st.app.rewardprovider.entity.Customer;
 import com.st.app.rewardprovider.entity.OrderDetail;
-import org.junit.jupiter.api.DisplayName;
+import com.st.app.rewardprovider.repository.CustomerRepository;
+import com.st.app.rewardprovider.repository.OrderDetailRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RewardProviderControllerTest {
@@ -21,18 +33,179 @@ public class RewardProviderControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @MockBean
+    private OrderDetailRepository orderDetailRepository;
+
+    @MockBean
+    private CustomerRepository customerRepository;
+
     @Test
-    @DisplayName("/reward rest api test ")
-    void testRewardPoint() {
-//TODO: mock the DB layer
+    public void testRewardPointForOKStatus() {
         long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal(50), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(50), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
         URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
-                .queryParam("fromMonth", 3)
+                .queryParam("fromMonth", rewardStartMonth)
                 .build()
                 .encode()
                 .toUri();
 
-        ResponseEntity<Collection<OrderDetail>> actual = this.restTemplate.getForObject(targetUrl, ResponseEntity.class);
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
         assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 90;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    @Test
+    public void testRewardPointForOKStatusWhenPurchaseLessThan50InLast3Month() {
+        long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal(10), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(10), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
+        URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
+                .queryParam("fromMonth", rewardStartMonth)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
+        assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 0;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    @Test
+    public void testRewardPointForOKStatusWhenPurchaseEquals50InLast3Month() {
+        long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal(10), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
+        URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
+                .queryParam("fromMonth", rewardStartMonth)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
+        assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 0;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    @Test
+    public void testRewardPointForOKStatusWhenPurchaseGreaterThan50InLast3Month() {
+        long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal(50), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(10), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
+        URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
+                .queryParam("fromMonth", rewardStartMonth)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
+        assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 30;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    @Test
+    public void testRewardPointForOKStatusWhenPurchaseEquals100InLast3Month() {
+        long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal(50), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(30), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal(20), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
+        URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
+                .queryParam("fromMonth", rewardStartMonth)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
+        assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 50;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    @Test
+    public void testRewardPointForOKStatusWhenPurchaseInFractionsInLast3Month() {
+        long customerId = 1;
+        int rewardStartMonth = 3;
+        Collection<OrderDetail> orderDetails = new ArrayList<>();
+        getOrderDetails(new BigDecimal("8.12"), new Date(), orderDetails);
+        Date date1 = Date.from(LocalDate.now().minusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal("8.12"), date1, orderDetails);
+        Date date2 = Date.from(LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        getOrderDetails(new BigDecimal("90.90"), date2, orderDetails);
+        when(customerRepository.findById(anyLong())).
+                thenReturn(Optional.of(new Customer(customerId,"test","test","test@gmail.com")));
+        when(orderDetailRepository.findTotalPurchaseForMonth(anyLong(), anyInt())).
+                thenReturn(orderDetails);
+        URI targetUrl = UriComponentsBuilder.fromUriString("/api/v1/rewards/" + customerId)
+                .queryParam("fromMonth", rewardStartMonth)
+                .build()
+                .encode()
+                .toUri();
+
+        ResponseEntity<RewardResponseDTO> actual =
+                this.restTemplate.getForEntity(targetUrl, RewardResponseDTO.class);
+        assertEquals(actual.getStatusCode().is2xxSuccessful(), HttpStatus.OK.is2xxSuccessful());
+        int expected = 64;
+        assertEquals(expected, actual.getBody().getTotalPoint());
+    }
+
+    private Collection<OrderDetail> getOrderDetails(BigDecimal purchase, Date created, Collection<OrderDetail> orderDetails) {
+        OrderDetail orderDetail1 = new OrderDetail();
+        orderDetail1.setTotalPurchase(purchase);
+        orderDetail1.setCreated(created);
+        orderDetails.add(orderDetail1);
+        return orderDetails;
     }
 }
