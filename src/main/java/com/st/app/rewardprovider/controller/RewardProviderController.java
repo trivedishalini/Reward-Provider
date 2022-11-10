@@ -55,7 +55,7 @@ public class RewardProviderController {
      * @return
      */
     @PostMapping("/customer/{customerId}/order")
-    public OrderDetail createOrderDetails(@PathVariable long customerId, @RequestBody OrderDetail orderDetail) throws ResourceNotFoundException {
+    public OrderDetail createOrderDetails(@PathVariable long customerId,@Valid @RequestBody OrderDetail orderDetail) throws ResourceNotFoundException {
         return rewardService.createOrderDetail(customerId, orderDetail);
     }
 
